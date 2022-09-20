@@ -37,12 +37,16 @@ public static class ConvertTIFF
     {
         // Get the frame dimension list from the image of the file and 
         Image tiffImage = Image.FromStream(inputFile);
-        // Get the globally unique identifier (GUID) 
-        Guid objGuid = tiffImage.FrameDimensionsList[0];
-        // Create the frame dimension 
-        FrameDimension dimension = new FrameDimension(objGuid);
+
         // Gets the total number of frames in the .tiff file 
-        int noOfPages = tiffImage.GetFrameCount(dimension);
+        int noOfPages = 0;
+        // Get the globally unique identifier (GUID) for each frame type
+        foreach (Guid objGuid in tiffImage.FrameDimensionsList)
+        {
+            // Create the frame dimension 
+            FrameDimension dimension = new FrameDimension(objGuid);
+            noOfPages += tiffImage.GetFrameCount(dimension);
+        }
 
         // Check for existence of TIFF Decoder
         ImageCodecInfo[] imageEncoders = ImageCodecInfo.GetImageEncoders();
