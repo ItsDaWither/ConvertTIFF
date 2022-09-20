@@ -3,7 +3,9 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
@@ -28,7 +30,15 @@ public static class ConvertTIFF
         {
             stream.Position = 0;
             // Upload PNGs to Blob Storage
-            outputImage.UploadBlob($"{name}-p{i}.png", stream);
+            try
+            {
+                outputImage.UploadBlob($"{name}-p{i}.png", stream);
+            }
+            catch (RequestFailedException)
+            {
+                var blobClient = outputImage.GetBlobClient($"{name}-p{i}.png");
+                await blobClient.UploadAsync(stream, true);
+            }
             i++;
         }
     }
